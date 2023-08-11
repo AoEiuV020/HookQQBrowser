@@ -8,7 +8,7 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-@SuppressWarnings({"RedundantThrows", "unused", "StatementWithEmptyBody"})
+@SuppressWarnings({"RedundantThrows", "unused", "StatementWithEmptyBody", "RedundantSuppression"})
 public class MainHook implements IXposedHookLoadPackage {
     @SuppressWarnings("All")
     private static final boolean DEBUG = BuildConfig.DEBUG && true;
@@ -18,7 +18,17 @@ public class MainHook implements IXposedHookLoadPackage {
         XposedBridge.log("handleLoadPackage: " + lpparam.processName + ", " + lpparam.packageName);
         if (Objects.equals(lpparam.processName, lpparam.packageName)) {
             // hookDebug(lpparam);
+            hookGDT(lpparam);
         }
+    }
+
+    private void hookGDT(XC_LoadPackage.LoadPackageParam lpparam) {
+        XposedHelpers.findAndHookMethod("com.qq.e.comm.managers.GDTADManager", lpparam.classLoader, "initWith", android.content.Context.class, java.lang.String.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                param.setResult(false);
+            }
+        });
     }
 
     private void log(XC_MethodHook.MethodHookParam param) {
